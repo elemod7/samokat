@@ -26,7 +26,6 @@ async def send_welcome(message: Message):
         welcome_text = f"Доброго дня, {user_name}!\n\n{WELCOME_TEXT_TEMPLATE}"
     else:
         welcome_text = f"Доброго дня!\n\n{WELCOME_TEXT_TEMPLATE}"
-
     contact_keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="Поделиться номером телефона", request_contact=True)]
@@ -34,7 +33,6 @@ async def send_welcome(message: Message):
         resize_keyboard=True,
         one_time_keyboard=True
     )
-
     await message.answer(welcome_text, reply_markup=contact_keyboard)
 
 @router.message(F.text == "Возрастные ограничения")
@@ -59,9 +57,7 @@ async def return_to_main_menu(message: Message):
 @router.message(F.text)
 async def get_phone_number(message: Message, bot, admin_id: int):
     user_id, user_name, text = message.from_user.id, message.from_user.first_name, message.text
-
     normalized_number = normalize_phone_number(text)
-
     if normalized_number:
         save_to_csv(user_id, user_name, normalized_number, text)
         notification = (

@@ -19,7 +19,6 @@ WELCOME_TEXT_TEMPLATE = (
     "Напишите Ваш номер телефона в ответ, и мы свяжемся с Вами в ближайшее время для начала сотрудничества и ответим на любые вопросы."
 )
 
-# Обработчик команды /start
 @router.message(F.text == "/start")
 async def send_welcome(message: Message):
     user_name = message.from_user.first_name
@@ -38,17 +37,14 @@ async def send_welcome(message: Message):
 
     await message.answer(welcome_text, reply_markup=contact_keyboard)
 
-# Обработчик для пункта "Возрастные ограничения"
 @router.message(F.text == "Возрастные ограничения")
 async def handle_age_restrictions(message: Message):
     await message.answer("Возраст от 18 лет.")
 
-# Обработчик для пункта "Наличие гражданства"
 @router.message(F.text == "Наличие гражданства")
 async def handle_citizenship(message: Message):
     await message.answer("Принимаем граждан стран: РФ, Казахстан, Армения, Беларусь, Киргизия.")
 
-# Обработчик для пункта "Города присутствия"
 @router.message(F.text == "Города присутствия")
 async def handle_cities(message: Message):
     await message.answer(
@@ -56,24 +52,18 @@ async def handle_cities(message: Message):
         "Ногинск, Орехово-Зуево, Краснодар, Ростов, Нижний Новгород, Тюмень, Коломны."
     )
 
-# Обработчик для пункта "Вернуться в главное меню"
 @router.message(F.text == "Вернуться в главное меню")
 async def return_to_main_menu(message: Message):
     await send_welcome(message)
 
-# Обработчик ввода номера телефона или текста
 @router.message(F.text)
 async def get_phone_number(message: Message, bot, admin_id: int):
     user_id, user_name, text = message.from_user.id, message.from_user.first_name, message.text
 
-    # Пробуем нормализовать номер телефона
     normalized_number = normalize_phone_number(text)
 
     if normalized_number:
-        # Сохраняем данные
         save_to_csv(user_id, user_name, normalized_number, text)
-
-        # Отправляем уведомление админу
         notification = (
             f"Новый номер от {user_name or 'пользователь'} (ID: {user_id}):\n"
             f"Введённый: {text}\nНормализованный: {normalized_number}"
@@ -82,11 +72,8 @@ async def get_phone_number(message: Message, bot, admin_id: int):
             await bot.send_message(admin_id, notification)
         except Exception as e:
             logging.warning(f"Не удалось отправить сообщение админу: {e}")
-
-        # Ответ пользователю
         await message.answer(f"Спасибо! Ваш номер {normalized_number} принят. Мы скоро с вами свяжемся!")
     else:
-        # Если номер невалидный, показываем меню
         menu_keyboard = ReplyKeyboardMarkup(
             keyboard=[
                 [KeyboardButton(text="Возрастные ограничения")],
@@ -101,18 +88,13 @@ async def get_phone_number(message: Message, bot, admin_id: int):
             reply_markup=menu_keyboard
         )
 
-# Обработчик для получения контакта
 @router.message(F.contact)
 async def handle_contact(message: Message, bot, admin_id: int):
     if message.contact:
         user_id = message.from_user.id
         user_name = message.from_user.first_name
         phone_number = message.contact.phone_number
-
-        # Сохраняем данные контакта
         save_to_csv(user_id, user_name, phone_number, "Отправлен через кнопку 'Поделиться номером'")
-
-        # Уведомление админу
         notification = (
             f"Новый контакт от {user_name or 'пользователь'} (ID: {user_id}):\n"
             f"Номер телефона: {phone_number}"
@@ -126,7 +108,6 @@ async def handle_contact(message: Message, bot, admin_id: int):
     else:
         await message.answer("Пожалуйста, используйте кнопку 'Поделиться номером телефона'.")
 
-# Обработчики для пунктов меню
 @router.message(F.text == "Возрастные ограничения")
 async def handle_age_restrictions(message: Message):
     await message.answer("Возраст от 18 лет.")

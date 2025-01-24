@@ -6,9 +6,8 @@ from dotenv import load_dotenv
 import logging
 import asyncio
 import os
-from handlers import router  # Импортируйте ваш роутер из handlers.py
+from handlers import router 
 
-# Загрузка переменных окружения
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
@@ -20,7 +19,7 @@ if not ADMIN_ID:
     raise ValueError("ID администратора не найден. Проверьте файл .env")
 
 try:
-    ADMIN_ID = int(ADMIN_ID)  # Преобразуем в int
+    ADMIN_ID = int(ADMIN_ID) 
 except ValueError:
     raise ValueError("ID администратора должен быть числом.")
 
@@ -29,18 +28,14 @@ class AdminIDMiddleware(BaseMiddleware):
         data['admin_id'] = int(os.getenv("ADMIN_ID"))
         return await handler(event, data)
         
-# Настройка логирования
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Инициализация бота и диспетчера
 bot = Bot(
     token=BOT_TOKEN,
     session=AiohttpSession(),
     default=DefaultBotProperties(parse_mode="HTML")
 )
 dp = Dispatcher()
-
-# Подключение роутеров
 dp.include_router(router)
 dp.update.outer_middleware(AdminIDMiddleware())
 
